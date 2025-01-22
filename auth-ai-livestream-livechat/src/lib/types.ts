@@ -79,3 +79,10 @@ export interface Aprobacion {
   data: Record<string, any>;  // Aquí viene la info para crear Torneo o Partido
   created_at: string;         // Fecha de creación
 }
+export interface ActividadReciente {
+  id: number;
+  fecha: string;
+  tipo: 'usuario' | 'partido' | 'torneo';
+  descripcion: string;
+  estado: 'pending' | 'approved' | 'rejected' | '';
+}

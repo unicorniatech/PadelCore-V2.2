@@ -18,6 +18,7 @@ class ActividadReciente(models.Model):
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
     descripcion = models.TextField()
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, blank=True, default='')
+    aprobacion_id = models.IntegerField(null=True, blank=True)
 
     # Opcional: un toString
     def __str__(self):

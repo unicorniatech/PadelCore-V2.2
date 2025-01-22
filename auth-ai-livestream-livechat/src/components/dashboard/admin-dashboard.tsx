@@ -48,6 +48,7 @@ import {
   fetchTorneos,
   fetchUsuarios,
   fetchPartidos,
+  fetchActividades
 } from '@/lib/api';
 
 // Importamos los tipos necesarios
@@ -59,6 +60,7 @@ import {
   PartidoForm,
   UsuarioForm,
   TorneoForm,
+  ActividadReciente,
 } from '@/lib/types';
 
 export function AdminDashboard() {
@@ -68,6 +70,9 @@ export function AdminDashboard() {
   // Aprobaciones Reales (desde la base de datos)
   // =========================================
   const [pendingApprovals, setPendingApprovals] = useState<Aprobacion[]>([]);
+
+  //Este es para lo de actividad reciente
+  const [actividades, setActividades] = useState<ActividadReciente[]>([]);
 
   // Cargar aprobaciones al montar el componente
   useEffect(() => {
@@ -86,9 +91,8 @@ export function AdminDashboard() {
   /* 
       useEffect para Websocket
       Esto permitirá que, si otro admin crea o aprueba/rechaza,
-      ú lo veas en vivo SIN refrescar.
-      También te llegará el mensaje si tú mismo creas algo, 
-      pero a veces conviene confiar en la inserción local. 
+      y que lo veas en vivo SIN refrescar.
+      También te llegará el mensaje si tú mismo creas algo,  
   */
   useEffect(() => {
     // Abrimos el websocket
@@ -191,7 +195,7 @@ export function AdminDashboard() {
     torneo: '',
   });
 
-  // Para búsqueda de jugadores
+  // Para búsqueda de jugadores (los checkboxes)
   const [searchEquipo1, setSearchEquipo1] = useState('');
   const [searchEquipo2, setSearchEquipo2] = useState('');
 
@@ -201,6 +205,7 @@ export function AdminDashboard() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [torneos, setTorneos] = useState<Torneo[]>([]);
   const [partidos, setPartidos] = useState<Partido[]>([]);
+  
 
   // Cargar usuarios al montar
   useEffect(() => {
@@ -239,6 +244,19 @@ export function AdminDashboard() {
       }
     };
     loadPartidos();
+  }, []);
+
+  //Cargar la actividad reciente
+  useEffect(() => {
+    const loadActividades = async () => {
+      try {
+        const data = await fetchActividades();
+        setActividades(data); //Aquí se guarda la lista
+      } catch (error) {
+        console.error('Error al cargar actividades:', error);
+      }
+    };
+    loadActividades();
   }, []);
 
   // =========================================
@@ -817,7 +835,7 @@ export function AdminDashboard() {
         </Card>
 
         {/* =========================== */}
-        {/* Actividad Reciente (demo) */}
+        {/* Actividad Reciente          */}
         {/* =========================== */}
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Actividad Reciente</h2>
@@ -832,45 +850,38 @@ export function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[
-                  {
-                    date: '12 Abril',
-                    type: 'Partido',
-                    description: 'C.Ramírez/A.González vs M.Torres/L.Hernández',
-                    status: 'Aprobado',
-                  },
-                  {
-                    date: '12 Abril',
-                    type: 'Ranking',
-                    description: 'Actualización semanal de rankings',
-                    status: 'Pendiente',
-                  },
-                  {
-                    date: '11 Abril',
-                    type: 'Torneo',
-                    description: 'Registro nuevo torneo: Copa Verano 2024',
-                    status: 'Aprobado',
-                  },
-                ].map((activity, index) => (
+                {actividades.map((actividad) => (
                   <TableRow
-                    key={index}
+                    key={actividad.id}
                     className="hover:bg-muted/50 transition-colors cursor-pointer"
                   >
-                    <TableCell>{activity.date}</TableCell>
-                    <TableCell>{activity.type}</TableCell>
-                    <TableCell>{activity.description}</TableCell>
+                    {/* Fecha */}
                     <TableCell>
-                      <Badge
-                        variant={
-                          activity.status === 'Aprobado'
-                            ? 'success'
-                            : activity.status === 'Pendiente'
-                            ? 'warning'
-                            : 'destructive'
-                        }
-                      >
-                        {activity.status}
-                      </Badge>
+                      {new Date(actividad.fecha).toLocaleString()}
+                    </TableCell>
+                    {/* Tipo */}
+                    <TableCell>{actividad.tipo}</TableCell>
+                    {/* Descripción */}
+                    <TableCell>{actividad.descripcion}</TableCell>
+                    {/* Estado */}
+                    <TableCell>
+                      {actividad.estado ? (
+                        <Badge
+                          variant={
+                            actividad.estado === 'approved'
+                              ? 'success'
+                              : actividad.estado === 'pending'
+                              ? 'warning'
+                              : actividad.estado === 'rejected'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
+                          {actividad.estado}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">N/A</Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -4,7 +4,8 @@ import {
     Torneo, 
     Partido, 
     PartidoCreate,
-    Aprobacion
+    Aprobacion,
+    ActividadReciente
  } from './types';
 
 // Configura la instancia de Axios
@@ -84,5 +85,9 @@ export const createAprobacion = async (payload: {
   }) => {
     // Reemplaza 'API' con la instancia de axios
     const response = await API.post('/aprobaciones/', payload);
+    return response.data;
+  };
+  export const fetchActividades = async (): Promise<ActividadReciente[]> => {
+    const response = await API.get('/actividades/');
     return response.data;
   };
