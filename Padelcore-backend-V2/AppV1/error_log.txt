@@ -1,0 +1,3 @@
+Watching for file changes with StatReloader
+Bad Request: /api/aprobaciones/1/approve/
+[14/Jan/2025 16:55:37] "PATCH /api/aprobaciones/1/approve/ HTTP/1.1" 400 44
