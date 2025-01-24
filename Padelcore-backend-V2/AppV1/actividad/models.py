@@ -11,7 +11,7 @@ class ActividadReciente(models.Model):
         ('pending', 'Pendiente'),
         ('approved', 'Aprobado'),
         ('rejected', 'Rechazado'),
-        ('', 'No aplica'),
+        ('directo', 'Directo'),
     )
 
     fecha = models.DateTimeField(default=timezone.now)  # Para ordenar

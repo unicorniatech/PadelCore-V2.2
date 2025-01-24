@@ -31,6 +31,7 @@ class AprobacionViewSet(viewsets.ModelViewSet):
                 tipo='torneo',  # o 'tournament' si prefieres
                 descripcion=f"Registro Torneo: {nombre_torneo}",
                 estado='pending',
+                aprobacion_id=instance.id,
             )
         elif instance.tipo == 'match':
             ActividadReciente.objects.create(
@@ -38,6 +39,7 @@ class AprobacionViewSet(viewsets.ModelViewSet):
                 tipo='partido',
                 descripcion="Registro Partido (pendiente)",
                 estado='pending',
+                aprobacion_id=instance.id,
             )
         # Si en el futuro hubiera otro tipo, else: pass
 
@@ -79,6 +81,26 @@ class AprobacionViewSet(viewsets.ModelViewSet):
         instance.status = 'approved'
         instance.save()
 
+        # (1) Actualizamos la ACTIVIDAD pendiente => 'approved'
+        try:
+            actividad = ActividadReciente.objects.get(
+                aprobacion_id=instance.id,
+                estado='pending',  # la que creamos al inicio
+            )
+            if instance.tipo == 'tournament':
+                nombre_torneo = instance.data.get('nombre', 'Sin nombre')
+                actividad.descripcion = f"Aprobado Torneo: {nombre_torneo}"
+            elif instance.tipo == 'match':
+                actividad.descripcion = "Aprobado Partido (creado)"
+            # else: pass
+            actividad.estado = 'approved'
+            actividad.fecha = timezone.now()  # opcional: update la fecha
+            actividad.save()
+        except ActividadReciente.DoesNotExist:
+            # Si no existía, no pasa nada, o puedes crear una Actividad
+            pass
+
+
         # Crear el registro real, dependiendo del tipo
         if instance.tipo == 'tournament':
             data = instance.data
@@ -96,13 +118,8 @@ class AprobacionViewSet(viewsets.ModelViewSet):
                 {"detail": "Torneo creado con éxito", "torneo_id": torneo.id},
                 status=status.HTTP_200_OK
             )
-            # (6) Registro de actividad para "Aprobado Torneo"
-            ActividadReciente.objects.create(
-                fecha=timezone.now(),
-                tipo='torneo',
-                descripcion=f"Aprobado Torneo: {data.get('nombre', 'Sin nombre')}",
-                estado='approved',
-            )
+            
+            
         elif instance.tipo == 'match':
             data = instance.data
             partido = Partido.objects.create(
@@ -117,13 +134,7 @@ class AprobacionViewSet(viewsets.ModelViewSet):
 
             response_data = {"detail": "Partido creado con éxito", "partido_id": partido.id}
 
-            # (7) Registro de actividad para "Aprobado Partido"
-            ActividadReciente.objects.create(
-                fecha=timezone.now(),
-                tipo='partido',
-                descripcion="Aprobado Partido (creado)",
-                estado='approved',
-            )
+            
         else:
             return Response({"detail": "Tipo no soportado."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -169,21 +180,21 @@ class AprobacionViewSet(viewsets.ModelViewSet):
         instance.save()
 
         #Crear actividad "rechazado"
-        if instance.tipo == 'tournament':
-            nombre_torneo = instance.data.get('nombre', 'Sin nombre')
-            ActividadReciente.objects.create(
-                fecha=timezone.now(),
-                tipo='torneo',
-                descripcion=f"Rechazado Torneo: {nombre_torneo}",
-                estado='rejected',
+        try:
+            actividad = ActividadReciente.objects.get(
+                aprobacion_id=instance.id,
+                estado='pending',
             )
-        elif instance.tipo == 'match':
-            ActividadReciente.objects.create(
-                fecha=timezone.now(),
-                tipo='partido',
-                descripcion="Rechazado Partido",
-                estado='rejected',
-            )
+            if instance.tipo == 'tournament':
+                nombre_torneo = instance.data.get('nombre', 'Sin nombre')
+                actividad.descripcion = f"Rechazado Torneo: {nombre_torneo}"
+            elif instance.tipo == 'match':
+                actividad.descripcion = "Rechazado Partido"
+            actividad.estado = 'rejected'
+            actividad.fecha = timezone.now()  # opcional
+            actividad.save()
+        except ActividadReciente.DoesNotExist:
+            pass
 
         # Notificar vía WebSocket
         channel_layer = get_channel_layer()
