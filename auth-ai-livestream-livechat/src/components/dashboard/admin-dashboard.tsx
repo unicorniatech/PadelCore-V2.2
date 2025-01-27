@@ -71,100 +71,10 @@ export function AdminDashboard() {
   // =========================================
   const [pendingApprovals, setPendingApprovals] = useState<Aprobacion[]>([]);
 
-  //Este es para lo de actividad reciente
+  // =========================================
+  // Actividad Reciente
+  // =========================================
   const [actividades, setActividades] = useState<ActividadReciente[]>([]);
-
-  // Cargar aprobaciones al montar el componente
-  useEffect(() => {
-    const loadAprobaciones = async () => {
-      try {
-        const data = await fetchAprobaciones(); // GET /aprobaciones/
-        // Filtra las que están en estado 'pending'
-        const pendientes = data.filter((item) => item.status === 'pending');
-        setPendingApprovals(pendientes);
-      } catch (error) {
-        console.error('Error al cargar aprobaciones:', error);
-      }
-    };
-    loadAprobaciones();
-  }, []);
-  /* 
-      useEffect para Websocket
-      Esto permitirá que, si otro admin crea o aprueba/rechaza,
-      y que lo veas en vivo SIN refrescar.
-      También te llegará el mensaje si tú mismo creas algo,  
-  */
-  useEffect(() => {
-    // Abrimos el websocket
-    const socket = new WebSocket('ws://127.0.0.1:8000/ws/aprobaciones/');
-    // ^ Ajusta la URL a producción (wss://...) si corresponde
-
-    socket.onopen = () => {
-      console.log('WebSocket conectado a /ws/aprobaciones/');
-    };
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data) as Aprobacion;
-      console.log('Mensaje WS aprobaciones:', data);
-
-      // Lógica para insertar o quitar de la lista:
-      if (data.status === 'pending') {
-        // Inserta en pendingApprovals si no existe
-        setPendingApprovals((prev) => {
-          const exists = prev.find((ap) => ap.id === data.id);
-          if (!exists) return [data, ...prev];
-          // Si existe, actualizamos:
-          return prev.map((ap) => (ap.id === data.id ? data : ap));
-        });
-      } else {
-        // 'approved' o 'rejected': lo quitamos de la lista
-        setPendingApprovals((prev) => prev.filter((ap) => ap.id !== data.id));
-      }
-    };
-
-    socket.onclose = (e) => {
-      console.log('WebSocket de aprobaciones cerrado:', e);
-    };
-
-    socket.onerror = (err) => {
-      console.error('Error WS aprobaciones:', err);
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, []);
-  /**
-   * Maneja la decisión de aprobación/rechazo de una solicitud.
-   * Renombrado a 'handleAprobacionDecision' para evitar conflictos con otro handleApproval.
-   */
-  const handleAprobacionDecision = async (id: number, isApproved: boolean) => {
-    try {
-      if (isApproved) {
-        await approveAprobacion(id); // PATCH /aprobaciones/<id>/approve/
-        toast({
-          title: 'Aprobado',
-          description: 'La solicitud ha sido aprobada exitosamente.',
-        });
-      } else {
-        await rejectAprobacion(id); // PATCH /aprobaciones/<id>/reject/
-        toast({
-          title: 'Rechazado',
-          description: 'La solicitud ha sido rechazada.',
-          variant: 'destructive',
-        });
-      }
-      // Quita el elemento aprobado/rechazado de la lista local
-      setPendingApprovals((prev) => prev.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo procesar la aprobación/rechazo.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   // =========================================
   // Estados para formularios de Jugador, Torneo y Partido
@@ -205,8 +115,110 @@ export function AdminDashboard() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [torneos, setTorneos] = useState<Torneo[]>([]);
   const [partidos, setPartidos] = useState<Partido[]>([]);
-  
 
+  // =========================================
+  // useEffect: cargar “Aprobaciones” al montar
+  // =========================================
+  useEffect(() => {
+    const loadAprobaciones = async () => {
+      try {
+        const data = await fetchAprobaciones(); // GET /aprobaciones/
+        // Filtra las que están en estado 'pending'
+        const pendientes = data.filter((item) => item.status === 'pending');
+        setPendingApprovals(pendientes);
+      } catch (error) {
+        console.error('Error al cargar aprobaciones:', error);
+      }
+    };
+    loadAprobaciones();
+  }, []);
+  /* 
+      useEffect para Websocket
+      Esto permitirá que, si otro admin crea o aprueba/rechaza,
+      y que lo veas en vivo SIN refrescar.
+      También te llegará el mensaje si tú mismo creas algo,  
+  */
+  // =========================================
+  // WebSocket para “Aprobaciones”
+  // =========================================
+  useEffect(() => {
+    // Abrimos el websocket
+    const socket = new WebSocket('ws://127.0.0.1:8000/ws/aprobaciones/');
+    // ^ Ajusta la URL a producción (wss://...) si corresponde
+    socket.onopen = () => {
+      console.log('WebSocket conectado a /ws/aprobaciones/');
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data) as Aprobacion;
+      console.log('Mensaje WS aprobaciones:', data);
+
+      // Lógica para insertar o quitar de la lista:
+      if (data.status === 'pending') {
+        // Inserta en pendingApprovals si no existe
+        setPendingApprovals((prev) => {
+          const exists = prev.find((ap) => ap.id === data.id);
+          if (!exists) return [data, ...prev];
+          // Si existe, actualizamos:
+          return prev.map((ap) => (ap.id === data.id ? data : ap));
+        });
+      } else {
+        // 'approved' o 'rejected': lo quitamos de la lista
+        setPendingApprovals((prev) => prev.filter((ap) => ap.id !== data.id));
+      }
+    };
+
+    socket.onclose = (e) => {
+      console.log('WebSocket de aprobaciones cerrado:', e);
+    };
+
+    socket.onerror = (err) => {
+      console.error('Error WS aprobaciones:', err);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+  // =========================================
+  // “Actividad Reciente”: re-fetch + WebSocket
+  // =========================================
+
+  //Cargar la actividad reciente
+  useEffect(() => {
+    const loadActividades = async () => {
+      try {
+        const data = await fetchActividades();
+        setActividades(data); //Aquí se guarda la lista
+      } catch (error) {
+        console.error('Error al cargar actividades:', error);
+      }
+    };
+    loadActividades();
+  }, []);
+  //Websockets para "actividad"
+  useEffect(() => {
+    const socket = new WebSocket('ws://127.0.0.1:8000/ws/actividad/');
+    socket.onopen = () => {
+      console.log('WS Actividad conectado');
+    };
+    socket.onmessage = async (event) => {
+      console.log('Mensaje WS actividad:', event.data);
+
+      // Cada vez que llegue un mensaje, re-fetch para tener
+      // la lista actualizada (en lugar de insertar local).
+      try {
+        const data = await fetchActividades();
+        setActividades(data);
+      } catch (error) {
+        console.error('Error al recargar actividades tras WS:', error);
+      }
+    };
+    socket.onclose = () => console.log('WS Actividad cerrado');
+    socket.onerror = (err) => console.error('WS Actividad error:', err);
+
+    return () => socket.close();
+  }, []);
   // Cargar usuarios al montar
   useEffect(() => {
     const loadUsuarios = async () => {
@@ -245,34 +257,50 @@ export function AdminDashboard() {
     };
     loadPartidos();
   }, []);
-
-  //Cargar la actividad reciente
-  useEffect(() => {
-    const loadActividades = async () => {
-      try {
-        const data = await fetchActividades();
-        setActividades(data); //Aquí se guarda la lista
-      } catch (error) {
-        console.error('Error al cargar actividades:', error);
+  // =========================================
+  // Funciones: Aprobación
+  // =========================================
+  const handleAprobacionDecision = async (id: number, isApproved: boolean) => {
+    try {
+      if (isApproved) {
+        await approveAprobacion(id); // PATCH /aprobaciones/<id>/approve/
+        toast({
+          title: 'Aprobado',
+          description: 'La solicitud ha sido aprobada exitosamente.',
+        });
+      } else {
+        await rejectAprobacion(id); // PATCH /aprobaciones/<id>/reject/
+        toast({
+          title: 'Rechazado',
+          description: 'La solicitud ha sido rechazada.',
+          variant: 'destructive',
+        });
       }
-    };
-    loadActividades();
-  }, []);
+      // Quita el elemento aprobado/rechazado de la lista local
+      setPendingApprovals((prev) => prev.filter((item) => item.id !== id));
+
+      //Re-fetch 
+      const updated = await fetchActividades();
+      setActividades(updated);
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo procesar la aprobación/rechazo.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // =========================================
   // Handlers: Registrar Jugador, Torneo y Partido (directo al backend)
   // =========================================
 
-  // Para inputs del formulario de Jugador
+  //Usuario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPlayerData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Para inputs del formulario de Torneo
-  const handleTorneoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTorneoData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleRegisterPlayer = async () => {
@@ -293,6 +321,11 @@ export function AdminDashboard() {
         rating_inicial: 0,
         club: '',
       });
+
+      // Re-fetch actividades
+      const updated = await fetchActividades();
+      setActividades(updated);
+
     } catch (error) {
       console.error('Error al registrar jugador:', error);
       toast({
@@ -301,6 +334,11 @@ export function AdminDashboard() {
         variant: 'destructive',
       });
     }
+  };
+  //Torneo
+  const handleTorneoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTorneoData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleRegisterTorneo = async () => {
@@ -328,10 +366,13 @@ export function AdminDashboard() {
         description: 'El torneo requiere aprobación antes de crearse.',
       });
 
-      // RE-FETCH para ver que aparezca inmediatamente en la lista
+      // RE-FETCH Aprobaciones
       const data = await fetchAprobaciones();
       const pendientes = data.filter((item) => item.status === 'pending');
       setPendingApprovals(pendientes);
+      //Re-fetch actividades
+      const updated = await fetchActividades();
+      setActividades(updated);
 
       // Limpia el formulario
       setTorneoData({
@@ -353,62 +394,7 @@ export function AdminDashboard() {
       });
     }
   };
-
-  const handleRegisterMatch = async () => {
-    try {
-      // 1) De tu estado partidoData, extrae la fecha y la hora
-      const [fecha, hora] = partidoData.fecha_hora.split('T');
-    
-      // 2) Construye un objeto que coincida con el serializer del backend
-      const matchDataJson = {
-        torneo: partidoData.torneo,          // El ID del torneo
-        equipo_1_ids: partidoData.equipo_1,  // array de IDs de usuarios
-        equipo_2_ids: partidoData.equipo_2,
-        fecha,                               // "2025-02-15" p.ej
-        hora,                                // "09:00"
-        resultado: partidoData.resultado,
-      };
-  
-      // 3) Llamar a createAprobacion (tipo: 'match')
-      // En lugar de createPartido
-      await createAprobacion({
-        tipo: 'match',
-        data: matchDataJson,
-      });
-  
-      toast({
-        title: 'Solicitud de Partido enviada',
-        description: 'El partido requiere aprobación antes de crearse.',
-      });
-      
-      // RE-FETCH para verlo en "Pendientes" 
-      const data = await fetchAprobaciones();
-      const pendientes = data.filter((item) => item.status === 'pending');
-      setPendingApprovals(pendientes);
-  
-  
-      // Actualiza la lista de partidos
-      //setPartidos((prev) => [...prev, response]);
-  
-      // Limpia el formulario
-      setPartidoData({
-        equipo_1: [],
-        equipo_2: [],
-        fecha_hora: '',
-        resultado: '',
-        torneo: '',
-      });
-    } catch (error) {
-      console.error('Error al registrar partido:', error);
-      toast({
-        title: 'Error al registrar partido',
-        description: 'Hubo un problema al registrar el partido. Intenta nuevamente.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Manejo de selección de jugadores en checkboxes
+  //partido
   const handleMatchChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'equipo_1' || name === 'equipo_2') {
@@ -444,6 +430,61 @@ export function AdminDashboard() {
     }
     // Resto de campos
     setPartidoData((prev) => ({ ...prev, [name]: value }));
+  };
+  
+  const handleRegisterMatch = async () => {
+    try {
+      // 1) De tu estado partidoData, extrae la fecha y la hora
+      const [fecha, hora] = partidoData.fecha_hora.split('T');
+    
+      // 2) Construye un objeto que coincida con el serializer del backend
+      const matchDataJson = {
+        torneo: partidoData.torneo,          // El ID del torneo
+        equipo_1_ids: partidoData.equipo_1,  // array de IDs de usuarios
+        equipo_2_ids: partidoData.equipo_2,
+        fecha,                               // "2025-02-15" p.ej
+        hora,                                // "09:00"
+        resultado: partidoData.resultado,
+      };
+  
+      // 3) Llamar a createAprobacion (tipo: 'match')
+      // En lugar de createPartido
+      await createAprobacion({
+        tipo: 'match',
+        data: matchDataJson,
+      });
+  
+      toast({
+        title: 'Solicitud de Partido enviada',
+        description: 'El partido requiere aprobación antes de crearse.',
+      });
+      
+      // RE-FETCH Aprobaciones 
+      const data = await fetchAprobaciones();
+      const pendientes = data.filter((item) => item.status === 'pending');
+      setPendingApprovals(pendientes);
+      
+      // Re-fetch Actividades
+      const updated = await fetchActividades();
+      setActividades(updated);
+  
+  
+      // Limpia el formulario
+      setPartidoData({
+        equipo_1: [],
+        equipo_2: [],
+        fecha_hora: '',
+        resultado: '',
+        torneo: '',
+      });
+    } catch (error) {
+      console.error('Error al registrar partido:', error);
+      toast({
+        title: 'Error al registrar partido',
+        description: 'Hubo un problema al registrar el partido. Intenta nuevamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Ejemplo de stats
