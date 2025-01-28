@@ -1,9 +1,20 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from .models import Usuario
-# Register your models here.
 
 @admin.register(Usuario)
-class UsuarioAdmin(admin.ModelAdmin):
-    readonly_fields = ('createdU', 'modifiedU')  # Campos solo lectura en el panel de admin
-    list_display = ('nombre_completo','email', 'createdU', 'modifiedU')  # Columnas visibles en la lista
-    date_hierarchy = 'createdU'  # Navegación por fechas en el panel
+class UsuarioAdmin(UserAdmin):
+    # Config de campos, etc.
+    fieldsets = (
+        (None, {'fields': ('email','password','nombre_completo')}),
+        ('Permissions', {'fields': ('is_staff','is_superuser','is_active','groups','user_permissions')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email','nombre_completo','password1','password2','is_staff','is_superuser','is_active')}
+        ),
+    )
+    list_display = ('email','nombre_completo','is_staff','is_active')
+    search_fields = ('email','nombre_completo')
+    ordering = ('email',)

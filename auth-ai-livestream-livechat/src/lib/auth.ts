@@ -29,10 +29,9 @@ export interface SignUpData {
 }
 
 // Helper to determine user role
-export async function getUserRole(email: string): Promise<UserRole> {
-  const normalizedEmail = email.toLowerCase();
-  if (normalizedEmail.includes('admin')) return 'admin';
-  if (normalizedEmail.includes('sponsor')) return 'sponsor';
+export function getUserRole(email: string): 'admin' | 'sponsor' | 'player' {
+  if (email.includes('admin')) return 'admin';
+  if (email.includes('sponsor')) return 'sponsor';
   return 'player';
 }
 

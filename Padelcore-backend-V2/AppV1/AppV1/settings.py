@@ -57,6 +57,9 @@ INSTALLED_APPS = [
     'auth_app',
 ]
 
+AUTH_USER_MODEL = 'usuarios.Usuario'
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -128,7 +131,9 @@ DATABASES = {
     }
 }
 
-
+#print("DEBUG: DB_NAME =", os.getenv('DB_NAME'))
+#print("DEBUG: DB_HOST =", os.getenv('DB_HOST'))
+#print("DEBUG: Ruta .env:", ENV_FILE) 
 
 
 # Password validation
