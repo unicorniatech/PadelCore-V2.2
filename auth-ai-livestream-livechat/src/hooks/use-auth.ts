@@ -1,66 +1,67 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { supabase } from '@/lib/supabase';
 import { useToast } from './use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/routes';
 
-// Reusar la misma interfaz
-interface SignUpData {
-  email: string
-  password: string
-  username?: string
-  fullName?: string
-}
-
-// Este hook se parece mucho al signUp del AuthProvider. 
-// Te serviría si no deseas usar AuthProvider para signUp, 
-// sino un hook directo en tu formulario:
 export function useSignUp() {
-  const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
-  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  async function signUp({ email, password, username, fullName }: SignUpData) {
+  const signUp = async ({
+    email,
+    password,
+    username,
+    fullName,
+  }: {
+    email: string;
+    password: string;
+    username: string;
+    fullName: string;
+  }) => {
     try {
-      setLoading(true)
-      // Ajusta la URL y el payload a tu Django
-      const payload = {
+      setLoading(true);
+      
+      const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        nombre_completo: fullName || username || 'Sin Nombre',
+        options: {
+          data: {
+            username: username.toLowerCase(),
+            full_name: fullName,
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          throw new Error('Este correo ya está registrado');
+        }
+        throw error;
       }
-      const { data } = await axios.post('http://127.0.0.1:8000/api/auth/register/', payload)
-
-      // data = { access, refresh, user: {...} }
-      localStorage.setItem('accessToken', data.access)
-      localStorage.setItem('refreshToken', data.refresh)
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      // Configura axios
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
 
       toast({
-        title: 'Cuenta Creada',
-        description: 'Tu cuenta ha sido creada exitosamente.',
-      })
+        title: "Cuenta Creada",
+        description: "Tu cuenta ha sido creada exitosamente.",
+      });
 
-      // Redirige al dashboard
-      navigate(ROUTES.DASHBOARD)
+      // Navigate after successful signup
+      navigate(ROUTES.DASHBOARD);
     } catch (error: any) {
-      console.error('Sign up error:', error)
       toast({
-        title: 'Error',
-        description: error.response?.data?.detail || 'No se pudo crear la cuenta.',
-        variant: 'destructive',
-      })
-      throw error
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return {
     signUp,
     loading,
-  }
+  };
 }

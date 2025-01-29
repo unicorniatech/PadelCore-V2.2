@@ -12,7 +12,7 @@ class UsuarioManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('rol', 'admin') #Fuerza admin a superusuarios
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('rol', 'admin')
         return self.create_user(email, password, **extra_fields)

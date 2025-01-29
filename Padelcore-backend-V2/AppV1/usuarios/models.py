@@ -19,10 +19,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     createdU = models.DateTimeField(auto_now_add=True,verbose_name="Creado") #Para saber cuanto tiempo lleva Creado
     modifiedU = models.DateTimeField(auto_now=True, verbose_name="Modificado") #Para saber última modificación
     # Nuevo campo 'rol' 
-    rol = rol = models.CharField(
+    rol = models.CharField(
         max_length=50,
         choices=ROL_CHOICES,
-        default='usuario'  # O 'player', según quieras
+        default='usuario'  # O 'player' puede ser 
     )  
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -35,3 +35,12 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    def save(self, *args, **kwargs):
+        """
+        Opcional: si quieres que rol='admin' implique is_staff=True, puedes
+        hacerlo aquí. O podrías hacerlo en tu Manager, serializer o en create_superuser.
+        """
+        if self.rol == 'admin':
+            self.is_staff = True
+        super().save(*args, **kwargs)
