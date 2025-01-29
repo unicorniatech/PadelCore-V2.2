@@ -43,13 +43,12 @@ import {
   rejectAprobacion,
   createAprobacion,
   createUsuario,
-  createTorneo,
-  createPartido,
   fetchTorneos,
   fetchUsuarios,
   fetchPartidos,
   fetchActividades
 } from '@/lib/api';
+
 
 // Importamos los tipos necesarios
 import {
@@ -75,6 +74,10 @@ export function AdminDashboard() {
   // Actividad Reciente
   // =========================================
   const [actividades, setActividades] = useState<ActividadReciente[]>([]);
+  //Para mostrar la cantidad:
+  const [usuariosActivos, setUsuariosActivos] = useState<number>(0);
+  const [partidosHoy, setPartidosHoy] = useState<number>(0);
+  const [torneosActivos, setTorneosActivos] = useState<number>(0);
 
   // =========================================
   // Estados para formularios de Jugador, Torneo y Partido
@@ -117,7 +120,7 @@ export function AdminDashboard() {
   const [partidos, setPartidos] = useState<Partido[]>([]);
 
   // =========================================
-  // useEffect: cargar “Aprobaciones” al montar
+  // useEffect: cargar “Aprobaciones”
   // =========================================
   useEffect(() => {
     const loadAprobaciones = async () => {
@@ -219,12 +222,16 @@ export function AdminDashboard() {
 
     return () => socket.close();
   }, []);
-  // Cargar usuarios al montar
+  // =======================
+  // Cargar Usuarios, Torneos, Partidos => y calcular stats
+  // =======================
+  //Usuarios
   useEffect(() => {
     const loadUsuarios = async () => {
       try {
         const data = await fetchUsuarios();
         setUsuarios(data);
+        setUsuariosActivos(data.length); //Usuarios Activos BETA, será 0 por el momento
       } catch (error) {
         console.error('Error al cargar usuarios:', error);
       }
@@ -238,6 +245,18 @@ export function AdminDashboard() {
       try {
         const data = await fetchTorneos();
         setTorneos(data);
+        //Torneos activos
+        const hoy = new Date();
+        let countActivos = 0;
+        data.forEach((torneo: Torneo) => {
+          const inicio = new Date(torneo.fecha_inicio);
+          const fin = new Date(torneo.fecha_fin);
+
+          if (hoy >= inicio && hoy <= fin) {
+            countActivos++;
+          }
+        });
+        setTorneosActivos(countActivos);
       } catch (error) {
         console.error('Error al cargar torneos:', error);
       }
@@ -251,6 +270,13 @@ export function AdminDashboard() {
       try {
         const data = await fetchPartidos();
         setPartidos(data);
+        // “Partidos Hoy”: filtra los que tengan fecha == hoy (YYYY-MM-DD)
+        const hoyIso = new Date().toISOString().split('T')[0];
+        const hoyCount = data.filter((partido) => partido.fecha_hora.split('T')[0] === hoyIso).length;
+
+        // OJO: en tu “Partido” has 'fecha_hora'; verifica si es parted
+        // Si usas 'fecha' y 'hora' separadas, hazlo distinto. Ajusta la lógica
+        setPartidosHoy(hoyCount);
       } catch (error) {
         console.error('Error al cargar partidos:', error);
       }
@@ -487,12 +513,14 @@ export function AdminDashboard() {
     }
   };
 
-  // Ejemplo de stats
+  // =======================
+  // Stats (usuariosActivos, partidosHoy, torneosActivos, ... )
+  // =======================
   const stats = [
-    { label: 'Usuarios Activos', value: '156', icon: Users },
-    { label: 'Partidos Hoy', value: '12', icon: Activity },
-    { label: 'Torneos Activos', value: '3', icon: Trophy },
-    { label: 'Eventos Próximos', value: '8', icon: Calendar },
+    { label: 'Usuarios Activos', value: usuariosActivos.toString(), icon: Users },
+    { label: 'Partidos Hoy', value: partidosHoy.toString(), icon: Activity },
+    { label: 'Torneos Activos', value: torneosActivos.toString(), icon: Trophy },
+    { label: 'Eventos Próximos', value: '0', icon: Calendar }, // dummy
   ];
 
   return (
