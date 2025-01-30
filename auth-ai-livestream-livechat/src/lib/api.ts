@@ -3,7 +3,8 @@ import {
     Usuario,  
     Partido, 
     Aprobacion,
-    ActividadReciente
+    ActividadReciente,
+    UsuarioForm
  } from './types';
 
 // Configura la instancia de Axios
@@ -37,9 +38,13 @@ export const fetchPartidos = async (): Promise<Partido[]> => {
 
 
 // Función para crear un nuevo usuario
-export const createUsuario = async (usuario: Usuario) => {
-    const response = await API.post('/usuarios/', usuario);
-    return response.data;
+export const createUsuario = async (form: UsuarioForm) => {
+  const payload = {
+    ...form,
+    rating_inicial: form.rating_inicial ? Number(form.rating_inicial) : 0,
+  };
+  const response = await API.post('/usuarios/', payload);
+  return response.data;
 };
 
 

@@ -87,6 +87,8 @@ export function AdminDashboard() {
     email: '',
     rating_inicial: 0,
     club: '',
+    password: '',
+    rol: 'usuario'
   });
 
   const [torneoData, setTorneoData] = useState<TorneoForm>({
@@ -284,7 +286,7 @@ export function AdminDashboard() {
     loadPartidos();
   }, []);
   // =========================================
-  // Funciones: Aprobación
+  // Funciones: Aprobación (Handlers)
   // =========================================
   const handleAprobacionDecision = async (id: number, isApproved: boolean) => {
     try {
@@ -331,11 +333,14 @@ export function AdminDashboard() {
 
   const handleRegisterPlayer = async () => {
     try {
-      const response = await createUsuario({
+      const payload = {
         ...playerData,
-        rating_inicial: Number(playerData.rating_inicial),
-      });
+        rating_inicial: Number(playerData.rating_inicial) || 0,
+      };
+      // Llamamos createUsuario
+      const response = await createUsuario(payload); // CAMBIO
       console.log('Jugador registrado:', response);
+
       toast({
         title: 'Jugador registrado con éxito',
         description: 'El jugador ha sido agregado correctamente.',
@@ -346,6 +351,8 @@ export function AdminDashboard() {
         email: '',
         rating_inicial: 0,
         club: '',
+        password: '',
+        rol: '',
       });
 
       // Re-fetch actividades
@@ -784,6 +791,34 @@ export function AdminDashboard() {
                         onChange={handleChange}
                         placeholder="Ej: Club de Padel Cuernavaca"
                       />
+                    </div>
+                    {/*Contraseña */}
+                    <div className="space-y-2">
+                      <Label>Contraseña</Label> 
+                      <Input
+                        name="password"
+                        type="password"
+                        value={playerData.password}
+                        onChange={handleChange}
+                        placeholder="Ingresa una contraseña"
+                      />
+                    </div>
+                    {/* (B) Nuevo campo Rol */}
+                    <div className="space-y-2">
+                      <Label>Rol</Label> 
+                      <select
+                        name="rol"
+                        value={playerData.rol}
+                        onChange={(e) =>
+                          setPlayerData((prev) => ({ ...prev, rol: e.target.value }))
+                        }
+                        className="border rounded px-3 py-2 w-full"
+                      >
+                        <option value="usuario">Usuario</option>
+                        <option value="player">Player</option>
+                        <option value="admin">Admin</option>
+                        <option value="sponsor">Sponsor</option>
+                      </select>
                     </div>
                   </div>
                   <Button className="w-full" onClick={handleRegisterPlayer}>
