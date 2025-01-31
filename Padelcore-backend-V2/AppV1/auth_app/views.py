@@ -17,9 +17,23 @@ def register_view(request):
     password = data.get('password')
     # Lo que envíes desde el front:
     nombre_completo = data.get('nombre_completo', 'Sin Nombre')
-    rol = data.get('rol', 'player')  # si no mandas nada, default a 'player'
+    rol = data.get('rol', 'usuario')  # si no mandas nada, default a 'player'
 
-    # Crea al usuario
+    # Validar campos mínimos
+    if not email or not password:
+        return Response(
+            {"detail": "Email y contraseña son obligatorios."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Verificar si ya existe
+    if Usuario.objects.filter(email=email).exists():
+        return Response(
+            {"detail": "Este correo ya está registrado."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Crear el usuario
     new_user = Usuario.objects.create_user(
         email=email,
         password=password,
@@ -27,8 +41,7 @@ def register_view(request):
         rol=rol
     )
 
-    # Generar tokens (si usas DRF Simple JWT)
-    from rest_framework_simplejwt.tokens import RefreshToken
+    # Generar tokens
     refresh = RefreshToken.for_user(new_user)
 
     return Response({
@@ -40,23 +53,52 @@ def register_view(request):
             "rol": new_user.rol,
             "nombre_completo": new_user.nombre_completo,
         }
-    }, status=201)
+    }, status=status.HTTP_201_CREATED)
 
+
+@api_view(['POST'])
 def login_view(request):
+    """
+    Iniciar sesión de un usuario existente.
+    Espera datos en JSON:
+    {
+      "email": "...",
+      "password": "..."
+    }
+    Retorna tokens y datos del usuario.
+    """
     data = request.data
     email = data.get('email')
     password = data.get('password')
 
+    if not email or not password:
+        return Response(
+            {"detail": "Email y contraseña son obligatorios."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     try:
         user = Usuario.objects.get(email=email)
     except Usuario.DoesNotExist:
-        return Response({"detail": "Usuario no encontrado."}, status=404)
+        return Response(
+            {"detail": "Usuario no encontrado."},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     if not user.check_password(password):
-        return Response({"detail": "Credenciales inválidas."}, status=401)
+        return Response(
+            {"detail": "Credenciales inválidas."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # (Opcional) Verificar si el usuario está activo
+    if not user.is_active:
+        return Response(
+            {"detail": "Este usuario se encuentra inactivo."},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     # Generar tokens
-    from rest_framework_simplejwt.tokens import RefreshToken
     refresh = RefreshToken.for_user(user)
 
     return Response({
@@ -68,4 +110,4 @@ def login_view(request):
             "rol": user.rol,
             "nombre_completo": user.nombre_completo,
         }
-    }, status=200)
+    }, status=status.HTTP_200_OK)

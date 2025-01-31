@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Users, Star, Crown } from 'lucide-react';
 import { useGsapHeroAnimation } from '@/hooks/use-gsap';
 import { CTAModal } from './cta-modal';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';;
 import { ROUTES } from '@/lib/routes';
 
 export function Hero() {

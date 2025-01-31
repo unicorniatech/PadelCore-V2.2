@@ -7,14 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSignUp } from '@/hooks/use-auth';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { createUsuario } from '@/lib/api';
 
 const signUpSchema = z.object({
   email: z.string()
     .email('Correo electrónico inválido'),
-  username: z.string()
-    .min(3, 'El nombre de usuario debe tener al menos 3 caracteres')
-    .max(20, 'El nombre de usuario no puede tener más de 20 caracteres')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guiones bajos'),
   fullName: z.string()
     .min(2, 'El nombre completo debe tener al menos 2 caracteres')
     .max(50, 'El nombre completo no puede tener más de 50 caracteres'),
@@ -45,7 +42,14 @@ export function SignUpForm() {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      await signUp(data);
+      const payload = {
+        email: data.email.trim(),
+        password: data.password,
+        nombre_completo: data.fullName,   // mapeamos "fullName" a "nombre_completo"     
+      };
+
+      // Llamamos a signUp con el payload ajustado
+      await createUsuario(payload);
       // Dialog will be closed automatically after navigation
     } catch (error) {
       console.error('Sign up error:', error);
@@ -54,6 +58,7 @@ export function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Correo Electrónico */}
       <div className="space-y-2">
         <Label htmlFor="email">Correo Electrónico</Label>
         <Input
@@ -67,20 +72,7 @@ export function SignUpForm() {
           <p className="text-sm text-red-500">{errors.email.message}</p>
         )}
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="username">Nombre de Usuario</Label>
-        <Input
-          id="username"
-          placeholder="usuario123"
-          {...register('username')}
-          className={errors.username ? 'border-red-500' : ''}
-        />
-        {errors.username && (
-          <p className="text-sm text-red-500">{errors.username.message}</p>
-        )}
-      </div>
-
+      {/* Nombre Completo */}
       <div className="space-y-2">
         <Label htmlFor="fullName">Nombre Completo</Label>
         <Input
@@ -93,7 +85,7 @@ export function SignUpForm() {
           <p className="text-sm text-red-500">{errors.fullName.message}</p>
         )}
       </div>
-
+      {/* Campo de Contraseña */}
       <div className="space-y-2">
         <Label htmlFor="password">Contraseña</Label>
         <div className="relative">
@@ -122,7 +114,7 @@ export function SignUpForm() {
           <p className="text-sm text-red-500">{errors.password.message}</p>
         )}
       </div>
-
+      {/* Confirmar Contraseña */}
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
         <div className="relative">
@@ -151,7 +143,7 @@ export function SignUpForm() {
           <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
         )}
       </div>
-
+      {/* Botón Crear Cuenta */}
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? (
           <>

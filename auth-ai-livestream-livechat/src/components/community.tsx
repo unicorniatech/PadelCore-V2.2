@@ -3,7 +3,7 @@ import { Users, MapPin, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useActions } from '@/lib/actions';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { SignInDialog } from './auth/sign-in-dialog';
 import { useState } from 'react';
 

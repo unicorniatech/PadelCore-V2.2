@@ -16,7 +16,7 @@ import { CommunityPage } from '@/components/community/community-page';
 import { TutorialsPage } from '@/components/tutorials/tutorials-page';
 import { TournamentsPage } from '@/components/tournaments/tournaments-page';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { ProfileView } from '@/components/profile/profile-view';
 import { SettingsView } from '@/components/settings/settings-view';
 
