@@ -3,32 +3,33 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import make_password
-from django.utils import timezone
+from django.db import IntegrityError
 from usuarios.models import Usuario
 from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['POST'])
 def register_view(request):
-
     data = request.data
-
     email = data.get('email')
     password = data.get('password')
     # Lo que envíes desde el front:
     nombre_completo = data.get('nombre_completo', 'Sin Nombre')
     rol = data.get('rol', 'player')  # si no mandas nada, default a 'player'
 
-    # Crea al usuario
-    new_user = Usuario.objects.create_user(
-        email=email,
-        password=password,
-        nombre_completo=nombre_completo,
-        rol=rol
-    )
+    # Manejo de email o password faltantes
+    if not email or not password:
+        return Response({"detail": "Faltan campos (email/password)."}, status=400)
 
-    # Generar tokens (si usas DRF Simple JWT)
-    from rest_framework_simplejwt.tokens import RefreshToken
+    try:
+        new_user = Usuario.objects.create_user(
+            email=email,
+            password=password,
+            nombre_completo=nombre_completo,
+            rol=rol
+        )
+    except IntegrityError:
+        return Response({"detail": "El email ya está en uso."}, status=400)
+
     refresh = RefreshToken.for_user(new_user)
 
     return Response({
@@ -40,12 +41,17 @@ def register_view(request):
             "rol": new_user.rol,
             "nombre_completo": new_user.nombre_completo,
         }
-    }, status=201)
+    }, status=status.HTTP_201_CREATED)
 
+
+@api_view(['POST'])
 def login_view(request):
     data = request.data
     email = data.get('email')
     password = data.get('password')
+
+    if not email or not password:
+        return Response({"detail": "Faltan campos (email/password)."}, status=400)
 
     try:
         user = Usuario.objects.get(email=email)
@@ -55,10 +61,7 @@ def login_view(request):
     if not user.check_password(password):
         return Response({"detail": "Credenciales inválidas."}, status=401)
 
-    # Generar tokens
-    from rest_framework_simplejwt.tokens import RefreshToken
     refresh = RefreshToken.for_user(user)
-
     return Response({
         "refresh": str(refresh),
         "access": str(refresh.access_token),
