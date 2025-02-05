@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { useToast } from './use-toast';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
