@@ -1,8 +1,22 @@
 import { createContext, useContext } from 'react';
-import { supabase } from './supabase';
+//import { supabase } from './supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/routes';
+import axios from 'axios'
+
+export async function login(email: string, password: string) {
+  const { data } = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+    email,
+    password
+  })
+  // data = { access, refresh, user: { id, email, rol, ... } }
+  localStorage.setItem('accessToken', data.access)
+  localStorage.setItem('refreshToken', data.refresh)
+  // etc. (guarda user en state)
+  return data
+}
+
 
 export type UserRole = 'player' | 'admin' | 'sponsor';
 
@@ -51,37 +65,30 @@ export function useSignUp() {
 
   const signUp = async (data: SignUpData) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        // Ensure email and password are trimmed
+      const payload = {
         email: data.email.trim(),
         password: data.password,
-        options: {
-          data: {
-            username: data.username,
-            full_name: data.fullName,
-          },
-        },
-      });
+        nombre_completo: data.fullName,
+        // rol, username, etc. si quieres
+      };
+      const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', payload);
 
-      if (error) {
-        if (error.message.includes('User already registered')) {
-          // Handle existing user error
-          throw new Error('Este correo ya está registrado');
-        }
-        throw new Error('Error al crear la cuenta. Por favor intenta de nuevo.');
-      }
+      // response.data = { refresh, access, user: {...} }
+      // Guardamos tokens
+      localStorage.setItem('accessToken', response.data.access);
+      localStorage.setItem('refreshToken', response.data.refresh);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
 
       toast({
         title: "¡Registro Exitoso!",
         description: "Tu cuenta ha sido creada exitosamente.",
       });
 
-      // Navigate after successful signup
       navigate(ROUTES.DASHBOARD);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || 'Error al crear la cuenta',
         variant: "destructive",
       });
       throw error;
@@ -97,32 +104,28 @@ export function useSignIn() {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const data = await login(email, password);
+
+      // data = { refresh, access, user: {...} }
+      // Guardamos en localStorage (ya lo hizo "login"?),
+      // pero podrías setear tu estado de user si deseas
+
+      toast({
+        title: "¡Bienvenido!",
+        description: "Has iniciado sesión exitosamente.",
       });
 
-      if (error) {
-        if (error.message === 'Invalid login credentials') {
-          throw new Error('Credenciales inválidas. Por favor verifica tu email y contraseña.');
-        }
-        throw new Error('Error al iniciar sesión. Por favor intenta de nuevo.');
-      }
+      // Redirigir a dashboard
+      navigate(ROUTES.DASHBOARD);
 
-      if (data.user) {
-        // Wait for user state update before proceeding
-        await updateUserState(data.user);
-      }
-
-      return { data };
-    } catch (error) {
+      return data;
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
       throw error;
-      return null;
     }
   };
 

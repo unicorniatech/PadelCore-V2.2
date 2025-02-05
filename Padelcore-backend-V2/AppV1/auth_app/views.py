@@ -14,7 +14,7 @@ def register_view(request):
     password = data.get('password')
     # Lo que envíes desde el front:
     nombre_completo = data.get('nombre_completo', 'Sin Nombre')
-    rol = data.get('rol', 'player')  # si no mandas nada, default a 'player'
+    rol = data.get('rol', 'usuario')  # si no mandas nada, default a 'player'
 
     # Manejo de email o password faltantes
     if not email or not password:
@@ -46,6 +46,15 @@ def register_view(request):
 
 @api_view(['POST'])
 def login_view(request):
+    """
+    Iniciar sesión de un usuario existente.
+    Espera datos en JSON:
+    {
+      "email": "...",
+      "password": "..."
+    }
+    Retorna tokens y datos del usuario.
+    """
     data = request.data
     email = data.get('email')
     password = data.get('password')
@@ -56,10 +65,23 @@ def login_view(request):
     try:
         user = Usuario.objects.get(email=email)
     except Usuario.DoesNotExist:
-        return Response({"detail": "Usuario no encontrado."}, status=404)
+        return Response(
+            {"detail": "Usuario no encontrado."},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     if not user.check_password(password):
-        return Response({"detail": "Credenciales inválidas."}, status=401)
+        return Response(
+            {"detail": "Credenciales inválidas."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # (Opcional) Verificar si el usuario está activo
+    if not user.is_active:
+        return Response(
+            {"detail": "Este usuario se encuentra inactivo."},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     refresh = RefreshToken.for_user(user)
     return Response({

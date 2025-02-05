@@ -5,6 +5,7 @@ export interface Usuario {
     email: string;
     rating_inicial?: number;
     club?: string | null;
+    rol?: string;
 }
 
 export interface Torneo {
@@ -50,6 +51,8 @@ export interface PartidoForm {
     email: string;
     rating_inicial: number;
     club: string;
+    password?: string;  // opcional
+    rol?: string;
   }
   
   export interface TorneoForm {
@@ -86,3 +89,4 @@ export interface ActividadReciente {
   descripcion: string;
   estado: 'pending' | 'approved' | 'rejected' | '';
 }
+

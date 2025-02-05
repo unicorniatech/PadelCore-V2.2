@@ -1,11 +1,10 @@
 import axios from 'axios';
 import { 
-    Usuario, 
-    Torneo, 
+    Usuario,  
     Partido, 
-    PartidoCreate,
     Aprobacion,
-    ActividadReciente
+    ActividadReciente,
+    UsuarioForm
  } from './types';
 
 // Configura la instancia de Axios
@@ -39,29 +38,15 @@ export const fetchPartidos = async (): Promise<Partido[]> => {
 
 
 // Función para crear un nuevo usuario
-export const createUsuario = async (usuario: Usuario) => {
-    const response = await API.post('/usuarios/', usuario);
-    return response.data;
-};
-
-export const createTorneo = async (torneo: Torneo) => {
-    if (!torneo.nombre || !torneo.sede || !torneo.fecha_inicio || !torneo.fecha_fin) {
-        throw new Error('Faltan campos obligatorios en el torneo.');
-    }
-
-    try {
-        const response = await API.post('/torneos/', torneo);
-        return response.data;
-    } catch (error: any) {
-        console.error('Error creando torneo:', error.response || error.message);
-        throw new Error('Error al crear torneo');
-    }
-};
-
-export const createPartido = async (partido: PartidoCreate) => {
-    const response = await API.post('/partidos/', partido);
-    return response.data;
+export const createUsuario = async (form: UsuarioForm) => {
+  const payload = {
+    ...form,
+    rating_inicial: form.rating_inicial ? Number(form.rating_inicial) : 0,
   };
+  const response = await API.post('/usuarios/', payload);
+  return response.data;
+};
+
 
 // 1) Obtener la lista de aprobaciones
 export const fetchAprobaciones = async (): Promise<Aprobacion[]> => {

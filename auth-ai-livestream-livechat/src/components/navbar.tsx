@@ -6,7 +6,7 @@ import { SignInDialog } from './auth/sign-in-dialog';
 import { SignUpDialog } from './auth/sign-up-dialog';
 import { ThemeToggle } from './theme-toggle';
 import { UserMenu } from './auth/user-menu';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { ROUTES } from '@/lib/routes';
 import { NotificationsBell } from './notifications/notifications-bell';
 import { useToast } from '@/hooks/use-toast';

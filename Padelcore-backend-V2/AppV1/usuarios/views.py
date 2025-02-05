@@ -50,17 +50,3 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

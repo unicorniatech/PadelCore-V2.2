@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { LogOut, Settings, UserCircle } from 'lucide-react';
 import { ProfileDialog } from '../profile/profile-dialog';
 import { SettingsDialog } from '../settings/settings-dialog';
