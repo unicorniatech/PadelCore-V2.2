@@ -20,6 +20,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null
+  loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (data: SignUpData) => Promise<void>
   logout: () => Promise<void>
@@ -32,7 +33,7 @@ export interface SignUpData {
 }
 
 // Creamos el contexto
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // ==============================================
 // AuthProvider: Maneja estado de user y métodos
@@ -42,8 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Al iniciar, leer user de localStorage
     const savedUser = localStorage.getItem('user')
     return savedUser ? JSON.parse(savedUser) : null
-  })
+  }) 
 
+  const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -60,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // signIn
   // ==============================
   async function signIn(email: string, password: string) {
+    setLoading(true)
     try {
       // Petición a Django: POST /api/auth/login/
       const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
@@ -143,6 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         variant: 'destructive',
       })
       throw error
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -169,6 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Proveer valores en el contexto
   const value: AuthContextType = {
     user,
+    loading,
     signIn,
     signUp,
     logout,
