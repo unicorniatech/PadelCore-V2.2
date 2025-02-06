@@ -35,6 +35,7 @@ function DashboardRoute() {
     case 'sponsor':
       return <SponsorDashboard />;
     case 'player':
+    case 'usuario':
       return <PlayerDashboard />;
     default:
       return <PlayerDashboard />; // Default to player dashboard

@@ -21,6 +21,9 @@ export function UserMenu() {
 
   if (!user) return null;
 
+  const displayName = user.name ?? user.email ?? 'Usuario';
+  const initials = displayName.substring(0, 2).toUpperCase();
+
   return (
     <>
       <DropdownMenu>
@@ -28,11 +31,11 @@ export function UserMenu() {
           <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
             <Avatar className="h-9 w-9 border-2 border-primary">
               <AvatarImage
-                src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=00a859&textColor=ffffff`}
-                alt={user.name}
+                src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}&backgroundColor=00a859&textColor=ffffff`}
+                alt={displayName}
               />
               <AvatarFallback className="bg-primary text-primary-foreground">
-                {user.name.substring(0, 2).toUpperCase()}
+                {initials}
               </AvatarFallback>
             </Avatar>
           </Button>

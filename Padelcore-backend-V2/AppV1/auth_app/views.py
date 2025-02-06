@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['POST'])
 def register_view(request):
+    print("Datos recibidos en register_view:", request.data)
     data = request.data
     email = data.get('email')
     password = data.get('password')

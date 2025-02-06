@@ -15,6 +15,7 @@ export interface User {
   email: string
   name: string
   role: UserRole
+  companyName?: string
   // cualquier otro campo que devuelva tu backend (club, rating_inicial, etc.)
 }
 

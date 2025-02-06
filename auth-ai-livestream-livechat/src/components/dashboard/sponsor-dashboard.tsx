@@ -27,7 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { Badge } from '@/components/ui/badge';
 
 interface Campaign {
