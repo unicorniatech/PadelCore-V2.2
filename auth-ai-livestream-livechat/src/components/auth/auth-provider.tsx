@@ -80,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Configurar axios para futuras llamadas
       axios.defaults.headers.common['Authorization'] = `Bearer ${access}`
+      console.log('backendUser.rol =>', backendUser.rol)
 
       // Actualiza estado
       setUser({
@@ -105,8 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         variant: 'destructive',
       })
       throw error
+    } finally {
+      setLoading(false)
     }
-  }
+  } 
 
   // ==============================
   // signUp

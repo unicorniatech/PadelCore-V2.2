@@ -1,2 +1,4 @@
 node_modules
 venv
+AppV1/.env
+__pycache__/
