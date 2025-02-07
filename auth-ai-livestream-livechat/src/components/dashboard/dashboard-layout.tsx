@@ -1,4 +1,4 @@
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Activity, LogOut, Video } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';

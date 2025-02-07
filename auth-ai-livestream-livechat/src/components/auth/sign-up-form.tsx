@@ -5,9 +5,9 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useSignUp } from '@/hooks/use-auth';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { createUsuario } from '@/lib/api';
+import { useAuth } from './auth-provider';
 
 const signUpSchema = z.object({
   email: z.string()
@@ -28,9 +28,9 @@ const signUpSchema = z.object({
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export function SignUpForm() {
-  const { signUp, loading } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { signIn, loading } = useAuth()
 
   const {
     register,
@@ -49,7 +49,19 @@ export function SignUpForm() {
       };
 
       // Llamamos a signUp con el payload ajustado
-      await createUsuario(payload);
+      try {
+        await createUsuario(payload);
+      } catch (error) {
+        console.error('Error creando usuario en supabase:', error);
+      // No llamamos signUp -> salimos
+      return;
+      }
+      
+      try {
+        await signIn(payload.email, payload.password);
+      } catch (error: any) {
+        console.error('Error registrando en Django:', error.response?.data ?? error);
+      }
       // Dialog will be closed automatically after navigation
     } catch (error) {
       console.error('Sign up error:', error);
