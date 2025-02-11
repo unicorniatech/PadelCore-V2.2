@@ -93,5 +93,6 @@ def login_view(request):
             "email": user.email,
             "rol": user.rol,
             "nombre_completo": user.nombre_completo,
+            "rating_inicial": str(user.rating_inicial) if user.rating_inicial else "0.00",
         }
     }, status=200)

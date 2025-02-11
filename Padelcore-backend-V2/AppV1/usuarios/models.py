@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 from django.db import models
 from .managers import UsuarioManager
+import uuid
 
 # Create your models here
 class Usuario(AbstractBaseUser, PermissionsMixin):
@@ -11,6 +12,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('sponsor', 'Sponsor'),
         ('player', 'Player'),
         ('usuario', 'Usuario'),  # rol genérico
+    )
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False
     )
     nombre_completo = models.CharField(max_length=255)
     email = models.EmailField(unique=True)

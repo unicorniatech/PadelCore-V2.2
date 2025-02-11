@@ -1,6 +1,5 @@
 from django.db import models
 from torneos.models import Torneo
-from django.contrib.auth.models import User
 from usuarios.models import Usuario
 from django.core.exceptions import ValidationError
 
