@@ -5,18 +5,19 @@ import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/lib/routes'
 
 // ==============================================
-// Tipos de ejemplo. Ajusta según tu definición real
+// Tipos
 // ==============================================
 
 export type UserRole = 'admin' | 'sponsor' | 'player' | 'usuario'
 
 export interface User {
-  id: number | string
+  id: string
   email: string
   name: string
   role: UserRole
+  rating_inicial?: number 
   companyName?: string
-  // cualquier otro campo que devuelva tu backend (club, rating_inicial, etc.)
+  // cualquier otro campo que se necesite (club, etc.)
 }
 
 interface AuthContextType {
@@ -88,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: backendUser.email,
         name: backendUser.nombre_completo || backendUser.email,
         role: (backendUser.rol as UserRole) || 'player',
+        rating_inicial: backendUser.rating_inicial ?? 0,
       })
 
       toast({
@@ -133,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: backendUser.email,
         name: backendUser.nombre_completo || backendUser.email,
         role: (backendUser.rol as UserRole) || 'player',
+        rating_inicial: backendUser.rating_inicial ?? 0,
       })
 
       toast({

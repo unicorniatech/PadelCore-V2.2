@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,15 +7,45 @@ import { PerformanceMetrics } from './performance-metrics';
 import { HeadToHead } from './head-to-head';
 import { ProgressTracking } from './progress-tracking';
 import { Trophy, TrendingUp, Users, Activity } from 'lucide-react';
+import { useAuth } from '../auth/auth-provider';
+import { fetchPartidos } from '@/lib/api';
+import { Partido } from '@/lib/types';
 
-const stats = [
-  { label: 'Ranking', value: '#42', icon: Trophy },
-  { label: 'Puntos', value: '1250', icon: TrendingUp },
-  { label: 'Partidos', value: '28', icon: Activity },
-  { label: 'Victorias', value: '18', icon: Users },
-];
 
 export function StatsDashboard() {
+  const { user } = useAuth()
+  const [partidosCount, setPartidosCount] = useState(0)
+
+  // 2) Cargar la lista de partidos y filtrar
+  useEffect(() => {
+    if (!user) return
+    const userId = String(user.id)
+
+    const loadMatches = async () => {
+      try {
+        const allMatches = await fetchPartidos()
+        const filtered = allMatches.filter((match: Partido) => 
+          match.equipo_1.includes(userId) || match.equipo_2.includes(userId)
+        )
+        setPartidosCount(filtered.length)
+      } catch (error) {
+        console.error('Error al cargar partidos:', error)
+      }
+    }
+    loadMatches()
+  }, [user])
+
+  // 3) stats array
+  // "Ranking" y "Victorias" quedan fijos/dummy por ahora
+  // "Puntos" lo sacamos de user?.rating_inicial
+  // "Partidos" = partidosCount
+  const stats = [
+    { label: 'Ranking', value: '#42', icon: Trophy },         // dummy
+    { label: 'Puntos', value: user?.rating_inicial ?? 0, icon: TrendingUp },
+    { label: 'Partidos', value: partidosCount, icon: Activity },
+    { label: 'Victorias', value: '18', icon: Users },         // dummy
+  ];
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
