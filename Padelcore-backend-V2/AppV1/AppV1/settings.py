@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'aprobaciones', 
     'actividad',
     'auth_app',
+    'ranking',
 ]
 
 AUTH_USER_MODEL = 'usuarios.Usuario'

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageSquare, Send, Shield, AlertTriangle, Ban } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '../auth/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import {
