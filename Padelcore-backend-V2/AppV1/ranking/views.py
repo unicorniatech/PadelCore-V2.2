@@ -13,4 +13,6 @@ class RankingRecordViewSet(viewsets.ModelViewSet):
         date_filter = self.request.query_params.get('date')
         if date_filter:
             qs = qs.filter(date=date_filter)
-        return qs
+        else:
+            qs = qs.filter(date=timezone.localdate())
+        return qs.order_by('position')

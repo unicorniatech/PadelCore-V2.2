@@ -4,7 +4,8 @@ import {
     Partido, 
     Aprobacion,
     ActividadReciente,
-    UsuarioForm
+    UsuarioForm,
+    RankingRecord
  } from './types';
 
 // Configura la instancia de Axios
@@ -76,3 +77,10 @@ export const createAprobacion = async (payload: {
     const response = await API.get('/actividades/');
     return response.data;
   };
+
+
+export async function fetchDailyRanking(date: string): Promise<RankingRecord[]> {
+    // Ejemplo: GET /api/ranking/records/?date=2025-07-01
+    const response = await API.get(`/ranking/records/?date=${date}`)
+    return response.data
+}

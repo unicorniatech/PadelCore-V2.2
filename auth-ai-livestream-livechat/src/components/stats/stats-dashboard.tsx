@@ -8,13 +8,14 @@ import { HeadToHead } from './head-to-head';
 import { ProgressTracking } from './progress-tracking';
 import { Trophy, TrendingUp, Users, Activity } from 'lucide-react';
 import { useAuth } from '../auth/auth-provider';
-import { fetchPartidos } from '@/lib/api';
-import { Partido } from '@/lib/types';
+import { fetchPartidos, fetchDailyRanking } from '@/lib/api';
+import { Partido, RankingRecord } from '@/lib/types';
 
 
 export function StatsDashboard() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [partidosCount, setPartidosCount] = useState(0)
+  const [playerRank, setPlayerRank] = useState<string | number>('---');
 
   // 2) Cargar la lista de partidos y filtrar
   useEffect(() => {
@@ -27,7 +28,7 @@ export function StatsDashboard() {
         const filtered = allMatches.filter((match: Partido) => 
           match.equipo_1.includes(userId) || match.equipo_2.includes(userId)
         )
-        setPartidosCount(filtered.length)
+        setPartidosCount(filtered.length);
       } catch (error) {
         console.error('Error al cargar partidos:', error)
       }
@@ -36,11 +37,32 @@ export function StatsDashboard() {
   }, [user])
 
   // 3) stats array
-  // "Ranking" y "Victorias" quedan fijos/dummy por ahora
-  // "Puntos" lo sacamos de user?.rating_inicial
-  // "Partidos" = partidosCount
+  useEffect(() => {
+    if (!user) return
+
+    const loadRanking = async () => {
+      try {
+        // Asumimos 'hoy' => date= new Date().toISOString().split('T')[0]
+        const todayIso = new Date().toISOString().split('T')[0]
+        const rankingRecords = await fetchDailyRanking(todayIso)
+
+        // Buscar si hay un RankingRecord del user
+        const record = rankingRecords.find((r: RankingRecord) => r.user === user.id)
+        if (record) {
+          setPlayerRank(record.position) // p.ej. 1, 2, etc.
+        } else {
+          // no está en la lista => '---'
+          setPlayerRank('---')
+        }
+      } catch (error) {
+        console.error('Error loading daily ranking:', error)
+        setPlayerRank('---')
+      }
+    }
+    loadRanking()
+  }, [user])
   const stats = [
-    { label: 'Ranking', value: '#42', icon: Trophy },         // dummy
+    { label: 'Ranking', value: playerRank, icon: Trophy },         
     { label: 'Puntos', value: user?.rating_inicial ?? 0, icon: TrendingUp },
     { label: 'Partidos', value: partidosCount, icon: Activity },
     { label: 'Victorias', value: '18', icon: Users },         // dummy
@@ -60,7 +82,11 @@ export function StatsDashboard() {
                 <stat.icon className="h-8 w-8 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-xl font-bold">{stat.value}</p>
+                  <p className="text-xl font-bold">
+                  {stat.label === 'Ranking' && typeof stat.value === 'number'
+                      ? `#${stat.value}`
+                      : stat.value}
+                  </p>
                 </div>
               </div>
             </Card>

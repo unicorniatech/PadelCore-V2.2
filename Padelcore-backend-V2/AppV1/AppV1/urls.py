@@ -24,5 +24,6 @@ urlpatterns = [
     path('api/',include('partidos.urls')),
     path('api/', include('aprobaciones.urls')),
     path('api/', include('actividad.urls')),
-    path('api/auth/', include('auth_app.urls'))
+    path('api/auth/', include('auth_app.urls')),
+    path('api/ranking/', include('ranking.urls')),
     ]

@@ -89,4 +89,10 @@ export interface ActividadReciente {
   descripcion: string;
   estado: 'pending' | 'approved' | 'rejected' | '';
 }
-
+export interface RankingRecord {
+  id: string
+  user: string         // o userId, si en el JSON devuelves solo la ID
+  rating_snapshot: number
+  position: number | string  // si guardas la pos normal, es un number; si devuelves '---', es string
+  date: string
+}
