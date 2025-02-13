@@ -29,7 +29,7 @@ function DashboardRoute() {
   }
 
   // Route based on user role
-  switch (user.role) {
+  switch (user.rol) {
     case 'admin':
       return <AdminDashboard />;
     case 'sponsor':

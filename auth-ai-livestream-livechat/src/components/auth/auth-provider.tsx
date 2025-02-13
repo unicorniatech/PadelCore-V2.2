@@ -14,7 +14,7 @@ export interface User {
   id: string
   email: string
   name: string
-  role: UserRole
+  rol: UserRole
   rating_inicial?: number 
   companyName?: string
   // cualquier otro campo que se necesite (club, etc.)
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: backendUser.id,
         email: backendUser.email,
         name: backendUser.nombre_completo || backendUser.email,
-        role: (backendUser.rol as UserRole) || 'player',
+        rol: (backendUser.rol as UserRole) || 'player',
         rating_inicial: backendUser.rating_inicial ?? 0,
       })
 
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: backendUser.id,
         email: backendUser.email,
         name: backendUser.nombre_completo || backendUser.email,
-        role: (backendUser.rol as UserRole) || 'player',
+        rol: (backendUser.rol as UserRole) || 'player',
         rating_inicial: backendUser.rating_inicial ?? 0,
       })
 
