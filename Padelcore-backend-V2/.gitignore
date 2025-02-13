@@ -3,3 +3,4 @@ venv
 *AppV1/
 *.env
 __pycache__/
+prueba.py
