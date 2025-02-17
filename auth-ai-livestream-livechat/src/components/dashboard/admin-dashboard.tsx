@@ -373,6 +373,32 @@ export function AdminDashboard() {
     const { name, value } = e.target;
     setTorneoData((prev) => ({ ...prev, [name]: value }));
   };
+  function handleTagChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { value, checked } = e.target; // 'Open', 'Amateur', 'Veterano', 'Mixto'
+    setTorneoData((prev) => {
+      let newTags = [...prev.tags];
+
+      if (checked) {
+        // Se está agregando la categoría
+        // Impedir Amateur + Veterano
+        if (value === 'Amateur' && newTags.includes('Veterano')) {
+          alert('No puedes seleccionar “Amateur” si ya tienes “Veterano”.');
+          return prev; // no agregar nada
+        }
+        if (value === 'Veterano' && newTags.includes('Amateur')) {
+          alert('No puedes seleccionar “Veterano” si ya tienes “Amateur”.');
+          return prev; 
+        }
+        // Si pasa validación, agregar
+        newTags.push(value);
+      } else {
+        // Se está quitando
+        newTags = newTags.filter((t) => t !== value);
+      }
+      return { ...prev, tags: newTags };
+    });
+  }
+  
 
   const handleRegisterTorneo = async () => {
     try {
@@ -745,6 +771,27 @@ export function AdminDashboard() {
                         onChange={handleTorneoChange}
                         placeholder="Ej: https://example.com/imagen.jpg"
                       />
+                    </div>
+                    {/*TAGS */}
+                    <div className="space-y-2 col-span-2">
+                      <Label>Categorías</Label>
+                      <div className="flex flex-col gap-1">
+                        {['Open', 'Amateur', 'Veterano', 'Mixto'].map((cat) => (
+                          <div key={cat} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id={cat}
+                              value={cat}
+                              checked={torneoData.tags.includes(cat)}
+                              onChange={handleTagChange}
+                              className="h-4 w-4"
+                            />
+                            <label htmlFor={cat} className="text-sm">
+                              {cat}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <Button className="w-full" onClick={handleRegisterTorneo}>

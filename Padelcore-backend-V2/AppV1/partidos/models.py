@@ -4,6 +4,11 @@ from usuarios.models import Usuario
 from django.core.exceptions import ValidationError
 
 # Create your models here.
+RESULTADO_CHOICES = [
+    ("", "Sin definir"),
+    ("E1", "Ganó Equipo 1"),
+    ("E2", "Ganó Equipo 2"),
+]
 class Partido(models.Model):
     torneo = models.ForeignKey(
         Torneo,
@@ -25,7 +30,13 @@ class Partido(models.Model):
     )  
     fecha = models.DateField()
     hora = models.TimeField()
-    resultado = models.CharField(max_length=255, blank=True, null=True)  # Opcional, se completa después del partido
+    resultado = models.CharField(
+        max_length=2,
+        choices=RESULTADO_CHOICES,
+        blank=True,     # Permite que el campo esté vacío (opcional)
+        default="",     # Valor por defecto = sin definir
+        verbose_name="Resultado del Partido"
+    )  # Opcional, se completa después del partido
     createdP = models.DateTimeField(auto_now_add=True,verbose_name="Creado") #Para saber cuanto tiempo lleva Creado
     modifiedP = models.DateTimeField(auto_now=True, verbose_name="Modificado") #Para saber última modificación
 

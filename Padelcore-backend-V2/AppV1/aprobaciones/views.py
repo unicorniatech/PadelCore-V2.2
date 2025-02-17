@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Aprobacion
 from .serializers import AprobacionSerializer
-from torneos.models import Torneo
+from torneos.models import Torneo, Tag
 from partidos.models import Partido
 from actividad.models import ActividadReciente
 from channels.layers import get_channel_layer
@@ -112,8 +112,12 @@ class AprobacionViewSet(viewsets.ModelViewSet):
                 premio_dinero=data.get('premio_dinero', 0),
                 puntos=data.get('puntos', 0),
                 imagen_url=data.get('imagen_url', ''),
-                #tags=data.get('tags', []),
             )
+            tags_list = data.get('tags', [])
+            for tag_name in tags_list:
+                tag_obj, _ = Tag.objects.get_or_create(nombre=tag_name)
+                torneo.tags.add(tag_obj)
+
             return Response(
                 {"detail": "Torneo creado con éxito", "torneo_id": torneo.id},
                 status=status.HTTP_200_OK
