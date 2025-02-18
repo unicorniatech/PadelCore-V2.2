@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Loader2, Upload, User } from 'lucide-react';
 import { useState } from 'react';
+import { uploadAvatarToSupabase } from '@/lib/storage';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(20),
@@ -55,11 +56,20 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
 
     try {
       setUploading(true);
-      // TODO: Implement file upload to Supabase storage
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUploading(false);
+
+      // 1) Subir a Supabase Storage
+      // Usa profile?.id o algo que identifique al user.
+      const publicUrl = await uploadAvatarToSupabase(file, profile?.id || 'unknown');
+
+      if (publicUrl) {
+        // 2) Actualizar el avatar_url en tu "profile"
+        await updateProfile({
+          avatar_url: publicUrl,
+        });
+      }
     } catch (error) {
       console.error('Error uploading avatar:', error);
+    } finally {
       setUploading(false);
     }
   };

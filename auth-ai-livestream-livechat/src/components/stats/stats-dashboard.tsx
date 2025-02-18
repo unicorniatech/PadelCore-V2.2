@@ -65,7 +65,7 @@ export function StatsDashboard() {
     { label: 'Ranking', value: playerRank, icon: Trophy },         
     { label: 'Puntos', value: user?.rating_inicial ?? 0, icon: TrendingUp },
     { label: 'Partidos', value: partidosCount, icon: Activity },
-    { label: 'Victorias', value: '18', icon: Users },         // dummy
+    { label: 'Victorias', value: '0', icon: Users },         // dummy
   ];
 
   return (

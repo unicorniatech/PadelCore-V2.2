@@ -630,12 +630,16 @@ export function AdminDashboard() {
                     {/* Resultado */}
                     <div className="space-y-2">
                       <Label>Resultado</Label>
-                      <Input
+                      <select
                         name="resultado"
                         value={partidoData.resultado}
                         onChange={handleMatchChange}
-                        placeholder="Ej: 6-4, 7-5"
-                      />
+                        className="border rounded px-3 py-2 w-full"
+                      >
+                        <option value="">Sin definir</option>
+                        <option value="E1">Ganó Equipo 1</option>
+                        <option value="E2">Ganó Equipo 2</option>
+                      </select>
                     </div>
                     {/* Buscador de Jugadores para Equipo 1 */}
                     <div className="space-y-2 col-span-2">

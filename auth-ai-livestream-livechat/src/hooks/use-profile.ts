@@ -44,6 +44,7 @@ export function useProfile() {
           matches_played: 0,
           wins: 0,
           losses: 0,
+          avatar_url: null, 
         };
 
         const { data: createdProfile, error: createError } = await supabase
